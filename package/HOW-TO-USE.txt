@@ -1,0 +1,61 @@
+AD ROTATOR - HOW TO USE
+=======================
+
+Plays one ad each time your playlist goes round:
+loop 1 plays ad 1, loop 2 plays ad 2, and so on, then it starts again at ad 1.
+
+
+WHAT'S IN THIS FOLDER
+---------------------
+
+  ads/             <- PUT YOUR ADS HERE
+  app/             the app itself, no need to open it
+  index.html       leave this file where it is
+  HOW-TO-USE.txt   this guide
+
+
+STEP 1 - ADD YOUR ADS
+---------------------
+
+Copy your ads into the "ads" folder and rename them by play order:
+
+  01.jpg
+  02.mp4
+  03.png
+
+- Images: jpg, jpeg, png, webp, gif, svg
+- Videos: mp4 (H.264), webm, mov, m4v. They play without sound.
+- Number them with no gaps: 01, 02, 03. If 03 is missing, 04 and later never play.
+- Only one file per number.
+- The leading 0 keeps them in play order in your folder. 1, 2, 3 works too.
+
+
+STEP 2 - ZIP IT AGAIN
+---------------------
+
+Open this folder and select EVERYTHING INSIDE IT (ads, app, index.html,
+HOW-TO-USE.txt), then:
+
+  Mac:      right-click > Compress
+  Windows:  right-click > Send to > Compressed (zipped) folder
+
+Do NOT zip the folder itself. index.html must be at the top of the zip,
+or the upload will say "index.html not found at the root of the zip file".
+
+
+STEP 3 - ADD IT TO YOUR PLAYLIST
+--------------------------------
+
+1. In your playlist, upload the zip like any other file.
+2. Wait for it to finish validating.
+3. Set its duration to the length of your ads (the longest one if they differ).
+4. Publish.
+
+
+GOOD TO KNOW
+------------
+
+- Proof of play reports show the Ad Rotator as one item, not each ad.
+- To change the ads, unzip your copy, swap the files in "ads", zip it again
+  and upload it in place of the old one.
+- Using two Ad Rotators in one playlist is fine; each keeps its own place.
