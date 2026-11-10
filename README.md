@@ -12,6 +12,9 @@ Loop 4:  Item A → Item B → Item C → Ad 1   ← starts again
 No coding, no server and no internet connection needed. Unzip it, drop your ads in a folder, zip it
 again and add it to your playlist.
 
+**Guide:** [Digital Signage Ad Rotation: Play a Different Ad Every Playlist Loop](https://easysignage.com/blog/26/digital-signage-ad-rotation/) explains how
+to plan an ad slot, how often each ad plays, and how to prepare ad files that work on screens.
+
 ---
 
 ## Why use it
@@ -193,6 +196,15 @@ Reload the page to step through the rotation.
 - **One duration for every ad.**
 - **No per-screen or per-time targeting.** Every screen rotates through the same ads.
 - **Needs a player that supports HTML5 (zip) packages** and keeps `localStorage` between plays.
+
+---
+
+## Learn more
+
+- [Digital Signage Ad Rotation: Play a Different Ad Every Playlist Loop](https://easysignage.com/blog/26/digital-signage-ad-rotation/): planning an ad slot,
+  plays-per-hour maths, ad specs and design tips.
+- [What Are Custom Digital Signage Apps?](https://easysignage.com/blog/26/custom-digital-signage-apps/):
+  how HTML5 packages like this one work.
 
 ---
 
