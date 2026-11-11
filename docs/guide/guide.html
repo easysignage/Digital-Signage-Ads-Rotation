@@ -263,15 +263,21 @@ ad-rotator/
 <!-- PAGE 4 -->
 <section class="page">
   <h2><span class="num">4</span>Add it to your playlist</h2>
-  <ol>
-    <li>In EasySignage, open your playlist and <b>upload the zip</b> like any other file.</li>
-    <li>Wait until it finishes checking the package.</li>
-    <li>Set the Ad Rotator's <b>duration</b> to match your ads: the length of your videos, or how long each image should show. All ads must have the same duration (see page 2).</li>
-    <li><b>Publish</b> to your screens.</li>
-  </ol>
-  <p>That's it. Each time the playlist reaches the Ad Rotator, the next ad plays. Each screen remembers its place, even after a restart.</p>
+  <div class="row" style="align-items:flex-start">
+    <ol style="flex:1.35">
+      <li>In EasySignage, open your playlist and <b>upload the zip</b> like any other file.</li>
+      <li>Wait until it finishes checking the package.</li>
+      <li>Set the Ad Rotator's <b>duration</b> to match your ads: the length of your videos, or how long each image should show. All ads must have the same duration (see page 2).</li>
+      <li><b>Publish</b> to your screens.</li>
+    </ol>
+    <div>
+      <div class="shot"><img src="playlist-duration.png" alt="The Ad Rotator item in a playlist with its duration set to 00:00:15"></div>
+      <p class="callout">The Ad Rotator in a playlist, set to <b>15 seconds</b> for 15-second ads.</p>
+    </div>
+  </div>
+  <p>That's it. Each time the playlist reaches the Ad Rotator, the next ad plays.</p>
 
-  <h2 style="margin-top:8mm">Changing your ads later</h2>
+  <h2 style="margin-top:5mm">Changing your ads later</h2>
   <ol>
     <li>Open your unzipped folder (keep it somewhere safe).</li>
     <li>Add, remove or replace files in <span class="file">ads</span>, and keep the numbers in order with no gaps.</li>
@@ -279,8 +285,8 @@ ad-rotator/
   </ol>
   <p class="callout">A new upload starts the rotation again from ad 01.</p>
 
-  <h2 style="margin-top:8mm">If something isn't right</h2>
-  <table>
+  <h2 style="margin-top:5mm">If something isn't right</h2>
+  <table class="compact">
     <tr><th style="width:36%">What you see</th><th>What to do</th></tr>
     <tr><td><i>"index.html not found at the root of the zip file"</i></td><td>You zipped the folder. Open it, select the 4 items inside, and zip those (step 3).</td></tr>
     <tr><td><i>"Add your ads to the ads folder, named 01, 02, 03…"</i> on screen</td><td>There's no ad numbered 01. Rename your first ad <span class="file">01.jpg</span> (or <span class="file">01.png</span>, <span class="file">01.mp4</span>…).</td></tr>
@@ -290,7 +296,7 @@ ad-rotator/
     <tr><td>The same ad plays every time</td><td>Contact support with your screen type. Some players need an update to remember the next ad.</td></tr>
   </table>
 
-  <div class="card soft" style="margin-top:7mm">
+  <div class="card soft" style="margin-top:4mm">
     <h3 style="margin-top:0">Good to know</h3>
     <ul>
       <li>Proof of play reports show the Ad Rotator as one item, not each ad.</li>
