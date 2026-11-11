@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ad Rotator: How to Use It</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  @page { size: A4; margin: 0; }
+  :root {
+    --p: #5e60e7; --p-soft: #eceefe; --o: #f7a325; --ink: #1f2150; --text: #3b3d63;
+    --mute: #6b6d9e; --line: #dfe1f7; --ok: #1f9d55; --ok-soft: #e7f6ee; --bad: #d64545; --bad-soft: #fdecec;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #fff; }
+  body { font-family: Poppins, Arial, sans-serif; color: var(--text); font-size: 10.5pt; line-height: 1.55; }
+  .page { width: 210mm; height: 297mm; padding: 16mm 17mm 14mm; position: relative; overflow: hidden; page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
+  .foot { position: absolute; left: 17mm; right: 17mm; bottom: 9mm; display: flex; justify-content: space-between; font-size: 8pt; color: var(--mute); border-top: 1px solid var(--line); padding-top: 3mm; }
+  h1 { font-size: 26pt; line-height: 1.15; color: var(--ink); font-weight: 700; }
+  h2 { font-size: 16pt; color: var(--ink); font-weight: 700; margin-bottom: 3mm; display: flex; align-items: center; gap: 3mm; }
+  h3 { font-size: 11.5pt; color: var(--ink); font-weight: 600; margin: 4mm 0 1.5mm; }
+  p { margin-bottom: 2.5mm; }
+  b, strong { color: var(--ink); font-weight: 600; }
+  code, .file { font-family: "SFMono-Regular", Menlo, Consolas, monospace; font-size: 9.5pt; background: var(--p-soft); color: var(--ink); padding: 0.3mm 1.5mm; border-radius: 1.2mm; }
+  .num { flex: none; width: 9mm; height: 9mm; border-radius: 50%; background: var(--p); color: #fff; font-size: 12pt; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+  .lead { font-size: 12pt; color: var(--mute); margin: 3mm 0 7mm; }
+  .card { border: 1px solid var(--line); border-radius: 3mm; padding: 5mm 6mm; margin-bottom: 5mm; background: #fff; }
+  .soft { background: #f7f8ff; border-color: #e6e8fb; }
+  .row { display: flex; gap: 5mm; }
+  .row > * { flex: 1; min-width: 0; }
+  ol, ul { padding-left: 5mm; }
+  li { margin-bottom: 1.6mm; }
+  .note { border-left: 1.2mm solid var(--o); background: #fff7e8; padding: 3mm 4mm; border-radius: 0 2mm 2mm 0; margin: 3mm 0 4mm; color: var(--ink); }
+  .key { border-left: 1.2mm solid var(--p); background: var(--p-soft); padding: 3.5mm 4.5mm; border-radius: 0 2mm 2mm 0; margin: 3mm 0 4mm; color: var(--ink); font-weight: 500; }
+  kbd { font-family: inherit; font-size: 9pt; font-weight: 600; color: var(--ink); background: #fff; border: 1px solid #c9cbea; border-bottom-width: 2px; border-radius: 1.2mm; padding: 0 1.6mm; }
+
+  /* header */
+  .brand { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9mm; }
+  .brand img { height: 10mm; }
+  .tag { font-size: 8.5pt; font-weight: 600; letter-spacing: 1.5px; color: var(--p); text-transform: uppercase; }
+
+  /* loop diagram */
+  .loops { display: grid; gap: 2.2mm; }
+  .loop { display: flex; align-items: center; gap: 2mm; }
+  .loop .lbl { width: 17mm; font-size: 8pt; font-weight: 700; color: var(--mute); letter-spacing: .5px; }
+  .tile { width: 22mm; height: 10mm; border-radius: 1.6mm; background: #e9ebfb; color: var(--mute); font-size: 7.5pt; display: flex; align-items: center; justify-content: center; }
+  .arrow { color: #a3a5e0; font-weight: 700; }
+  .ad { width: 26mm; height: 10mm; border-radius: 1.6mm; color: #fff; font-weight: 700; font-size: 9pt; display: flex; align-items: center; justify-content: center; }
+  .a1 { background: var(--p); } .a2 { background: var(--o); color: var(--ink); } .a3 { background: var(--ink); }
+  .again { font-size: 8pt; color: var(--p); font-weight: 600; }
+
+  /* overview steps */
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; }
+  .step { border: 1px solid var(--line); border-radius: 2.5mm; padding: 4mm 3.5mm; text-align: center; }
+  .step .num { margin: 0 auto 2mm; }
+  .step b { display: block; font-size: 10pt; }
+  .step .desc { font-size: 8.5pt; color: var(--mute); line-height: 1.4; display: block; margin-top: 1mm; }
+  .step .desc .file { font-size: 8pt; }
+  .step .desc b { display: inline; font-size: inherit; }
+
+  /* folder trees */
+  .tree { font-family: "SFMono-Regular", Menlo, Consolas, monospace; font-size: 9.5pt; line-height: 1.75; background: #fbfbff; border: 1px solid var(--line); border-radius: 2.5mm; padding: 3.5mm 4.5mm; color: var(--ink); white-space: pre; }
+  .tree .hl { color: var(--p); font-weight: 700; }
+  .tree .dim { color: var(--mute); }
+  .tree .ok { color: var(--ok); font-weight: 700; }
+  .tree .bad { color: var(--bad); font-weight: 700; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
+  th, td { text-align: left; padding: 2.2mm 3mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 8.5pt; text-transform: uppercase; letter-spacing: .5px; color: var(--mute); font-weight: 600; background: #f7f8ff; }
+
+  /* right / wrong */
+  .verdict { border-radius: 3mm; padding: 4.5mm 5mm; }
+  .verdict.ok { background: var(--ok-soft); border: 1px solid #bfe6cf; }
+  .verdict.bad { background: var(--bad-soft); border: 1px solid #f5c6c6; }
+  .badge { display: inline-block; font-size: 8.5pt; font-weight: 700; letter-spacing: .5px; padding: 0.6mm 2.4mm; border-radius: 10mm; color: #fff; margin-bottom: 2.5mm; }
+  .ok .badge { background: var(--ok); } .bad .badge { background: var(--bad); }
+  .verdict h3 { margin-top: 0; }
+
+  /* finder mock (wrong way) */
+  .finder { background: #fff; border: 1px solid #d5d7ea; border-radius: 2mm; overflow: hidden; font-size: 9pt; color: var(--ink); }
+  .finder .bar { background: #f1f2f8; padding: 1.6mm 3mm; font-size: 8pt; color: var(--mute); border-bottom: 1px solid #e3e4f0; }
+  .finder .item { padding: 1.4mm 3mm; display: flex; align-items: center; gap: 2mm; }
+  .finder .sel { background: #2f6fed; color: #fff; }
+  .ico { width: 4mm; height: 3.2mm; border-radius: .6mm; background: #59a7f7; display: inline-block; }
+  .ico.doc { background: #fff; border: 1px solid #b9bbd6; width: 3.2mm; height: 4mm; }
+  .sel .ico { background: #bcd7ff; }
+
+  /* screenshot */
+  .shot { border: 1px solid #d5d7ea; border-radius: 2.5mm; overflow: hidden; display: block; width: 100%; }
+  .shot img { display: block; width: 100%; }
+  .callout { font-size: 8.5pt; color: var(--mute); margin-top: 1.5mm; }
+
+  /* windows mock */
+  .win { background: #fff; border: 1px solid #d5d7ea; border-radius: 2mm; font-size: 9pt; color: #222; overflow: hidden; }
+  .win .item { padding: 1.3mm 3mm; display: flex; align-items: center; gap: 2mm; }
+  .win .sel { background: #cce4f7; }
+  .menu { margin: 1.5mm 3mm 3mm 14mm; border: 1px solid #ccc; border-radius: 1.5mm; box-shadow: 0 1mm 3mm rgba(0,0,0,.12); background: #fafafa; }
+  .menu div { padding: 1.2mm 3mm; }
+  .menu .on { background: #e5f1fb; font-weight: 600; }
+  .sub { margin: -1mm 3mm 3mm 40mm; border: 1px solid #ccc; border-radius: 1.5mm; background: #fafafa; box-shadow: 0 1mm 3mm rgba(0,0,0,.12); }
+  .sub div { padding: 1.2mm 3mm; }
+  .sub .on { background: #e5f1fb; font-weight: 600; }
+
+  .check li { list-style: none; position: relative; padding-left: 6mm; }
+  .check li::before { content: "✓"; position: absolute; left: 0; color: var(--ok); font-weight: 700; }
+  .x li { list-style: none; position: relative; padding-left: 6mm; }
+  .x li::before { content: "✕"; position: absolute; left: 0; color: var(--bad); font-weight: 700; }
+</style>
+</head>
+<body>
+
+<!-- PAGE 1 -->
+<section class="page">
+  <div class="brand"><img src="logo.jpg" alt="EasySignage"><span class="tag">Quick guide</span></div>
+  <h1>Ad Rotator:<br>a different ad every playlist loop</h1>
+  <p class="lead">Put several ads in one playlist slot. Each time your playlist goes round, the next ad plays. No coding, no server, works offline.</p>
+
+  <div class="card soft">
+    <h3 style="margin-top:0">How it plays</h3>
+    <div class="loops">
+      <div class="loop"><span class="lbl">LOOP 1</span><span class="tile">Your content</span><span class="arrow">›</span><span class="tile">Your content</span><span class="arrow">›</span><span class="ad a1">Ad 1</span></div>
+      <div class="loop"><span class="lbl">LOOP 2</span><span class="tile">Your content</span><span class="arrow">›</span><span class="tile">Your content</span><span class="arrow">›</span><span class="ad a2">Ad 2</span></div>
+      <div class="loop"><span class="lbl">LOOP 3</span><span class="tile">Your content</span><span class="arrow">›</span><span class="tile">Your content</span><span class="arrow">›</span><span class="ad a3">Ad 3</span></div>
+      <div class="loop"><span class="lbl">LOOP 4</span><span class="tile">Your content</span><span class="arrow">›</span><span class="tile">Your content</span><span class="arrow">›</span><span class="ad a1">Ad 1</span><span class="again">↺ starts again</span></div>
+    </div>
+  </div>
+
+  <h2>Four steps</h2>
+  <div class="steps">
+    <div class="step"><span class="num">1</span><b>Unzip</b><span class="desc">Open the <span class="file">ad-rotator.zip</span> download</span></div>
+    <div class="step"><span class="num">2</span><b>Add your ads</b><span class="desc">Into the <span class="file">ads</span> folder, named 01, 02, 03…</span></div>
+    <div class="step"><span class="num">3</span><b>Zip it again</b><span class="desc">Select the <b>contents</b>, not the folder</span></div>
+    <div class="step"><span class="num">4</span><b>Upload</b><span class="desc">Add the zip to your playlist</span></div>
+  </div>
+
+  <h3 style="margin-top:7mm">You'll need</h3>
+  <ul>
+    <li><span class="file">ad-rotator.zip</span> from <b>github.com/easysignage/Digital-Signage-Ads-Rotation</b> (Releases).</li>
+    <li>Your ads as image or video files. See the list of supported files on page 2.</li>
+    <li>An EasySignage playlist to add it to.</li>
+  </ul>
+
+  <div class="foot"><span>Ad Rotator · Quick guide</span><span>1 / 4</span></div>
+</section>
+
+<!-- PAGE 2 -->
+<section class="page">
+  <h2><span class="num">1</span>Unzip the download</h2>
+  <div class="row">
+    <div>
+      <p><b>Mac:</b> double-click <span class="file">ad-rotator.zip</span>. A folder appears next to it.</p>
+      <p><b>Windows:</b> right-click <span class="file">ad-rotator.zip</span> → <b>Extract All…</b> → <b>Extract</b>.</p>
+      <p>Open the new folder. Inside you'll find:</p>
+    </div>
+    <div class="tree"><span class="hl">ads/</span>            <span class="dim">← your ads</span>
+<span>app/</span>            <span class="dim">don't change</span>
+<span>index.html</span>      <span class="dim">leave it here</span>
+<span>HOW-TO-USE.txt</span>  <span class="dim">quick steps</span></div>
+  </div>
+
+  <h2 style="margin-top:8mm"><span class="num">2</span>Add your ads</h2>
+  <p>Copy your ads into the <span class="file">ads</span> folder and <b>rename each one with its play number</b>. The number decides the order:</p>
+  <div class="row" style="align-items:flex-start">
+    <div class="tree"><span class="hl">ads/</span>
+  <span class="ok">01.jpg</span>   <span class="dim">plays on loop 1</span>
+  <span class="ok">02.mp4</span>   <span class="dim">plays on loop 2</span>
+  <span class="ok">03.png</span>   <span class="dim">plays on loop 3</span></div>
+    <div>
+      <ul class="check">
+        <li>Start at <b>01</b> and count up with <b>no gaps</b>. If 03 is missing, 04 and later never play.</li>
+        <li><b>One file per number.</b></li>
+        <li>You can delete <span class="file">PUT-YOUR-ADS-HERE.txt</span>.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="margin-top:6mm">Supported files</h3>
+  <table>
+    <tr><th style="width:22%">Type</th><th style="width:30%">Formats</th><th>Tips</th></tr>
+    <tr><td><b>Images</b></td><td>JPG, JPEG, PNG, WebP, GIF, SVG</td><td>Make them the same size as your screen, for example 1920 × 1080.</td></tr>
+    <tr><td><b>Videos</b></td><td>MP4, MOV, M4V, WebM</td><td>Export as <b>H.264 MP4, 1080p, 30 fps</b>. Videos play <b>without sound</b>.</td></tr>
+    <tr><td><b>Not supported</b></td><td>HEIC, TIFF, BMP, AVI, WMV, MKV</td><td>Convert to JPG, PNG or MP4 first.</td></tr>
+  </table>
+
+  <div class="note"><b>Keep your ads the same length</b>, for example all 10 or all 15 seconds. The slot has one duration in your playlist.</div>
+
+  <div class="foot"><span>Ad Rotator · Quick guide</span><span>2 / 4</span></div>
+</section>
+
+<!-- PAGE 3 -->
+<section class="page">
+  <h2><span class="num">3</span>Zip it again: select the contents</h2>
+  <div class="key">Open the folder and select the 4 items <b>inside</b> it: <span class="file">ads</span>, <span class="file">app</span>, <span class="file">HOW-TO-USE.txt</span> and <span class="file">index.html</span>. Then compress those. <b>Don't compress the folder itself.</b></div>
+
+  <div class="row">
+    <div class="verdict ok">
+      <span class="badge">RIGHT</span>
+      <h3>Select what's inside, then Compress</h3>
+      <div class="shot"><img src="mac-select-compress.png" alt="Mac Finder with ads, app, HOW-TO-USE.txt and index.html selected, and Compress in the right-click menu"></div>
+      <p class="callout">On a Mac: select the 4 items (<kbd>⌘</kbd> + <kbd>A</kbd>), right-click, then choose <b>Compress</b>. The Mac creates <span class="file">Archive.zip</span>; you can rename it.</p>
+    </div>
+    <div>
+      <div class="verdict bad">
+        <span class="badge">WRONG</span>
+        <h3>Compressing the folder</h3>
+        <div class="finder">
+          <div class="bar">Downloads</div>
+          <div class="item sel"><span class="ico"></span>ad-rotator</div>
+          <div class="item"><span class="ico doc"></span>ad-rotator.zip</div>
+        </div>
+        <p class="callout">This puts everything one level down inside the zip, and the upload is rejected with <i>"index.html not found at the root of the zip file"</i>.</p>
+      </div>
+
+      <h3 style="margin-top:5mm">What's inside the zip</h3>
+      <div class="row">
+        <div class="tree" style="font-size:8.5pt"><span class="ok">✓ right</span>
+<span class="hl">index.html</span>
+ads/
+app/
+HOW-TO-USE.txt</div>
+        <div class="tree" style="font-size:8.5pt"><span class="bad">✕ wrong</span>
+ad-rotator/
+  index.html
+  ads/
+  app/</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:6mm">On Windows</h3>
+  <div class="row" style="align-items:flex-start">
+    <div>
+      <ol>
+        <li>Open the folder.</li>
+        <li>Select everything inside: <kbd>Ctrl</kbd> + <kbd>A</kbd>.</li>
+        <li>Right-click one of the selected items.</li>
+        <li><b>Windows 11:</b> choose <b>Compress to ZIP file</b>.<br><b>Windows 10:</b> choose <b>Send to</b> → <b>Compressed (zipped) folder</b>.</li>
+      </ol>
+      <p class="callout">Windows names the zip after the item you right-clicked. You can rename it.</p>
+    </div>
+    <div class="win">
+      <div class="item sel"><span class="ico"></span>ads</div>
+      <div class="item sel"><span class="ico"></span>app</div>
+      <div class="item sel"><span class="ico doc"></span>HOW-TO-USE.txt</div>
+      <div class="item sel"><span class="ico doc"></span>index.html</div>
+      <div class="menu"><div>Open</div><div class="on">Send to ›</div><div>Copy</div></div>
+      <div class="sub"><div class="on">Compressed (zipped) folder</div><div>Desktop</div></div>
+    </div>
+  </div>
+
+  <div class="foot"><span>Ad Rotator · Quick guide</span><span>3 / 4</span></div>
+</section>
+
+<!-- PAGE 4 -->
+<section class="page">
+  <h2><span class="num">4</span>Add it to your playlist</h2>
+  <ol>
+    <li>In EasySignage, open your playlist and <b>upload the zip</b> like any other file.</li>
+    <li>Wait until it finishes checking the package.</li>
+    <li>Set the item's <b>duration</b> to the length of your ads (the longest one if they differ).</li>
+    <li><b>Publish</b> to your screens.</li>
+  </ol>
+  <p>That's it. Each time the playlist reaches the Ad Rotator, the next ad plays. Each screen remembers its place, even after a restart.</p>
+
+  <h2 style="margin-top:8mm">Changing your ads later</h2>
+  <ol>
+    <li>Open your unzipped folder (keep it somewhere safe).</li>
+    <li>Add, remove or replace files in <span class="file">ads</span>, and keep the numbers in order with no gaps.</li>
+    <li>Zip the <b>contents</b> again (step 3), and upload the new zip in place of the old one.</li>
+  </ol>
+  <p class="callout">A new upload starts the rotation again from ad 01.</p>
+
+  <h2 style="margin-top:8mm">If something isn't right</h2>
+  <table>
+    <tr><th style="width:36%">What you see</th><th>What to do</th></tr>
+    <tr><td><i>"index.html not found at the root of the zip file"</i></td><td>You zipped the folder. Open it, select the 4 items inside, and zip those (step 3).</td></tr>
+    <tr><td><i>"Add your ads to the ads folder, named 01, 02, 03…"</i> on screen</td><td>There's no ad numbered 01. Rename your first ad <span class="file">01.jpg</span> (or <span class="file">01.png</span>, <span class="file">01.mp4</span>…).</td></tr>
+    <tr><td>Some ads never play</td><td>Check for a gap in the numbers (01, 02, 04) or an unsupported file type.</td></tr>
+    <tr><td>A video shows black</td><td>Export it again as H.264 MP4. iPhone videos are often HEVC, which some screens can't play.</td></tr>
+    <tr><td>An ad looks cropped or has bars</td><td>Resize it to your screen size, for example 1920 × 1080.</td></tr>
+    <tr><td>The same ad plays every time</td><td>Contact support with your screen type. Some players need an update to remember the next ad.</td></tr>
+  </table>
+
+  <div class="card soft" style="margin-top:7mm">
+    <h3 style="margin-top:0">Good to know</h3>
+    <ul>
+      <li>Proof of play reports show the Ad Rotator as one item, not each ad.</li>
+      <li>You can use more than one Ad Rotator in a playlist; each keeps its own place.</li>
+      <li>To give one ad more plays, add it twice, for example as <span class="file">01.jpg</span> and <span class="file">03.jpg</span>.</li>
+    </ul>
+  </div>
+
+  <div class="foot"><span>Ad Rotator · github.com/easysignage/Digital-Signage-Ads-Rotation</span><span>4 / 4</span></div>
+</section>
+
+</body>
+</html>

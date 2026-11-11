@@ -6,9 +6,13 @@ html, body {
   background: #000;
 }
 
+/* top/right/bottom/left instead of inset: older webviews (webOS 4, Tizen 4) lack inset. */
 #stage {
   position: fixed;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
 }
 
 #stage img,
@@ -20,7 +24,10 @@ html, body {
 
 #message {
   position: fixed;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   display: none;
   align-items: center;
   justify-content: center;
@@ -39,6 +46,8 @@ html, body {
   color: #fff;
   background: rgba(0, 0, 0, 0.7);
   border-radius: 6px;
-  white-space: pre;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-width: 90%;
   display: none;
 }

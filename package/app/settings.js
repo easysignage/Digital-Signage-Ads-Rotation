@@ -10,4 +10,8 @@ window.AD_ROTATOR_SETTINGS = {
   // If a video ends before the playlist moves on: "hold" stays on the last frame,
   // "loop" plays it again.
   videoEnd: "hold",
+
+  // true shows a small box on screen with the ad playing, how fast it started and
+  // which ad is next. Use it to check a screen, then set it back to false.
+  debug: false,
 };

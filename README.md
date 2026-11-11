@@ -45,6 +45,8 @@ Grab the zip from the [`dist`](dist) folder (or the Releases page):
 
 ## Quick start
 
+Prefer a printable version? See the **[Ad Rotator quick guide (PDF)](docs/Ad-Rotator-Guide.pdf)**, with screenshots for Mac and Windows.
+
 ### 1. Unzip it
 
 You'll see:
@@ -117,11 +119,16 @@ match its real type (for example a JPEG renamed to `.png`) can be rejected.
 ## How it works
 
 1. The screen opens `index.html` every time the playlist reaches the item.
-2. The app remembers, on that screen, which ad number is next, using the browser's `localStorage`.
-3. It looks for that number in `ads/`, trying each supported file type, and shows it.
+2. The app remembers, on that screen, which ad is next and its exact file, using the browser's
+   `localStorage`, and shows it straight away. There's no searching at start, so the ad appears with
+   no blank gap.
+3. While the ad plays, the app looks up the following ad in `ads/`, trying each supported file type,
+   and saves it for the next loop.
 4. If that number doesn't exist, the rotation has passed the last ad, so it goes back to `01`.
 5. If a player keeps the page open between loops instead of reloading it, the app moves to the next ad
    when the page comes back into view.
+
+The very first play on a screen has to search for ad `01`, so it can take a moment longer.
 
 Because each screen keeps its own counter:
 
@@ -144,6 +151,7 @@ editor:
 | `fit` | `"contain"`, `"cover"` | `"contain"` | `contain` shows the whole ad, with bars if its shape differs from the screen. `cover` fills the screen and crops the edges. |
 | `background` | any CSS colour | `"#000000"` | The colour of the bars when `fit` is `contain`. |
 | `videoEnd` | `"hold"`, `"loop"` | `"hold"` | What a video does if it ends before the playlist moves on. |
+| `debug` | `true`, `false` | `false` | Shows a small box on screen with the ad playing, how many milliseconds it took to appear, and which ad is next. Turn it on to check a screen, then off again. |
 
 ---
 
@@ -181,7 +189,7 @@ python3 -m http.server 8000
 
 Then open:
 
-- `http://localhost:8000/?debug=1` shows which ad is playing and which one is next.
+- `http://localhost:8000/?debug=1` shows which ad is playing, how fast it appeared and which one is next.
 - `http://localhost:8000/?reset=1` starts again from ad 1.
 
 Reload the page to step through the rotation.

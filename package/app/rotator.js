@@ -6,18 +6,28 @@
 // numbered by its counter, trying each supported extension. When that number is
 // missing, the rotation has passed the last ad and starts again at 1.
 //
-// The player opens index.html each time the playlist reaches this item, so the counter
-// lives in localStorage. If a player keeps the page open between loops, the page moves
-// on when it becomes visible again after being hidden.
+// The player opens index.html each time the playlist reaches this item, so the state
+// lives in localStorage: the number of the next ad and, once known, its exact file.
+// While an ad plays, the app looks up the next ad's file in the background and saves
+// it, so the next start shows the ad straight away instead of searching first.
+// If a player keeps the page open between loops, the page moves on when it becomes
+// visible again after being hidden.
 //
-// URL options for testing: ?debug=1 shows the current state, ?reset=1 starts at ad 1.
+// URL options for testing: ?debug=1 shows the current state and timings, ?reset=1
+// starts again at ad 1.
 (function () {
   "use strict";
 
   var IMAGE_EXT = ["jpg", "jpeg", "png", "webp", "gif", "svg"];
-  var VIDEO_EXT = ["mp4", "webm", "mov", "m4v"];
+  var VIDEO_EXT = ["mp4", "mov", "m4v", "webm"];
   var PROBE_TIMEOUT_MS = 8000;
+  // Wait before looking up the next ad, so the lookup doesn't compete with the ad
+  // that is starting.
+  var PREFETCH_DELAY_MS = 1500;
 
+  var VERSION = "1.1.0";
+  var startedAt = now();
+  var pageOpenedAt = startedAt;
   var settings = window.AD_ROTATOR_SETTINGS || {};
   var stage = document.getElementById("stage");
   var messageBox = document.getElementById("message");
@@ -25,25 +35,38 @@
   var params = parseQuery(window.location.search);
   // Keyed by the page's own path so two rotators on one screen keep separate places.
   var storageKey = "adRotator:" + window.location.pathname;
+  var storageError = "";
   var storage = pickStorage();
+  var visibilityChanges = 0;
+  var diag = recordLoad();
   var current = null;
+  var shownAfter = null;
+  var startedFrom = "";
   var wasHidden = false;
   var busy = false;
+  var prefetchTimer = null;
 
   document.body.style.background = settings.background || "#000";
 
   if (params.reset === "1") {
-    writeNext(1);
+    writeState({ next: 1 });
   }
 
   playNext();
 
+  if (debugOn()) {
+    // Keeps "page open for" current, which shows whether the player reloads the page.
+    setInterval(showDebug, 1000);
+  }
+
   document.addEventListener("visibilitychange", function () {
+    visibilityChanges += 1;
     if (document.hidden) {
       wasHidden = true;
       pauseVideo();
     } else if (wasHidden) {
       wasHidden = false;
+      startedAt = now();
       playNext();
     }
   });
@@ -53,44 +76,76 @@
       return;
     }
     busy = true;
-    var wanted = readNext();
-    findAd(wanted, function (ad) {
-      if (!ad && wanted !== 1) {
-        // Past the last ad: start again from the first.
-        wanted = 1;
-        findAd(1, done);
-        return;
-      }
-      done(ad);
-    });
+    clearTimeout(prefetchTimer);
+    var state = readState();
+
+    if (state.src) {
+      // The file was found during the previous play: show it at once.
+      startedFrom = "saved";
+      show({ number: state.next, src: state.src, video: state.video }, function () {
+        // The saved file is gone (the package changed): search for it instead.
+        startedFrom = "search";
+        resolve(state.next, done);
+      });
+      busy = false;
+      return;
+    }
+
+    startedFrom = "search";
+    resolve(state.next, done);
 
     function done(ad) {
       busy = false;
       if (!ad) {
+        writeState({ next: 1 });
         showMessage("Add your ads to the \"ads\" folder, named 01, 02, 03 and so on.");
         return;
       }
-      writeNext(wanted + 1);
       show(ad);
     }
   }
 
-  // Looks for ad number n under every name it may have (1, 01, 001) and every supported
-  // extension at once, then returns the first match in list order, so a stray duplicate
-  // (01.jpg and 01.png) resolves predictably.
+  // Finds ad number n, or ad 1 when n is past the last ad.
+  function resolve(n, callback) {
+    findAd(n, function (ad) {
+      if (ad || n === 1) {
+        callback(ad);
+        return;
+      }
+      findAd(1, callback);
+    });
+  }
+
+  // Looks for ad number n under every name it may have (01, 1, 001). Images are checked
+  // all at once, which is cheap. Videos are checked one at a time, most likely name
+  // first, because each check creates a video player and many at once is slow on
+  // low-end players. The first match wins, so a stray duplicate (01.jpg and 01.mp4)
+  // resolves predictably: images before videos, then the order of the lists above.
   function findAd(n, callback) {
-    var candidates = [];
-    numberNames(n).forEach(function (name) {
+    var names = numberNames(n);
+    var images = [];
+    var videos = [];
+    names.forEach(function (name) {
       IMAGE_EXT.forEach(function (ext) {
-        candidates.push({ src: "ads/" + name + "." + ext, video: false });
-        candidates.push({ src: "ads/" + name + "." + ext.toUpperCase(), video: false });
+        images.push({ number: n, src: "ads/" + name + "." + ext, video: false });
+        images.push({ number: n, src: "ads/" + name + "." + ext.toUpperCase(), video: false });
       });
       VIDEO_EXT.forEach(function (ext) {
-        candidates.push({ src: "ads/" + name + "." + ext, video: true });
-        candidates.push({ src: "ads/" + name + "." + ext.toUpperCase(), video: true });
+        videos.push({ number: n, src: "ads/" + name + "." + ext, video: true });
+        videos.push({ number: n, src: "ads/" + name + "." + ext.toUpperCase(), video: true });
       });
     });
 
+    probeAll(images, function (image) {
+      if (image) {
+        callback(image);
+        return;
+      }
+      probeInOrder(videos, 0, callback);
+    });
+  }
+
+  function probeAll(candidates, callback) {
     var results = new Array(candidates.length);
     var pending = candidates.length;
     candidates.forEach(function (candidate, i) {
@@ -107,6 +162,20 @@
           callback(null);
         }
       });
+    });
+  }
+
+  function probeInOrder(candidates, i, callback) {
+    if (i >= candidates.length) {
+      callback(null);
+      return;
+    }
+    probe(candidates[i], function (ok) {
+      if (ok) {
+        callback(candidates[i]);
+      } else {
+        probeInOrder(candidates, i + 1, callback);
+      }
     });
   }
 
@@ -142,6 +211,9 @@
       finished = true;
       clearTimeout(timer);
       el.removeAttribute("src");
+      if (candidate.video) {
+        el.load();
+      }
       callback(ok);
     }
 
@@ -158,26 +230,51 @@
     el.src = candidate.src;
   }
 
-  function show(ad) {
+  // Shows the ad and, while it plays, looks up the one after it. onMissing runs instead
+  // if the file can't be loaded.
+  function show(ad, onMissing) {
     current = ad;
+    shownAfter = null;
     var fit = settings.fit === "cover" ? "cover" : "contain";
     var el;
+
+    // Save the next number before anything else, so a screen switched off mid-ad
+    // still moves on.
+    writeState({ next: ad.number + 1 });
 
     if (ad.video) {
       el = document.createElement("video");
       el.muted = true;
       el.autoplay = true;
       el.playsInline = true;
+      el.preload = "auto";
       el.setAttribute("muted", "");
       el.setAttribute("playsinline", "");
       el.loop = settings.videoEnd === "loop";
     } else {
       el = document.createElement("img");
       el.alt = "";
+      el.decoding = "async";
     }
     el.style.objectFit = fit;
-    el.src = ad.src;
 
+    el.addEventListener(ad.video ? "playing" : "load", function onShown() {
+      el.removeEventListener(ad.video ? "playing" : "load", onShown);
+      shownAfter = Math.round(now() - startedAt);
+      showDebug();
+    });
+    el.addEventListener("error", function () {
+      if (current !== ad) {
+        return;
+      }
+      if (onMissing) {
+        onMissing();
+      } else {
+        showMessage("Could not play " + ad.src);
+      }
+    });
+
+    el.src = ad.src;
     stage.innerHTML = "";
     stage.appendChild(el);
     messageBox.style.display = "none";
@@ -189,9 +286,30 @@
       }
     }
     showDebug();
+
+    clearTimeout(prefetchTimer);
+    prefetchTimer = setTimeout(function () {
+      prefetch(ad.number + 1);
+    }, PREFETCH_DELAY_MS);
+  }
+
+  // Finds the file for the next play and saves it, so that play starts instantly.
+  function prefetch(n) {
+    resolve(n, function (next) {
+      if (!next) {
+        return;
+      }
+      // Only save if nothing else has moved the rotation on meanwhile.
+      if (readState().next !== n) {
+        return;
+      }
+      writeState({ next: next.number, src: next.src, video: next.video });
+      showDebug();
+    });
   }
 
   function showMessage(text) {
+    current = null;
     stage.innerHTML = "";
     messageBox.textContent = text;
     messageBox.style.display = "flex";
@@ -205,24 +323,38 @@
     }
   }
 
-  function readNext() {
+  // State is {next, src, video}. Older versions stored just the number.
+  function readState() {
+    var state = { next: 1, src: "", video: false };
     if (!storage) {
-      return 1;
+      return state;
     }
     try {
-      var value = parseInt(storage.getItem(storageKey), 10);
-      return isNaN(value) || value < 1 ? 1 : value;
+      var raw = storage.getItem(storageKey);
+      if (!raw) {
+        return state;
+      }
+      if (raw.charAt(0) === "{") {
+        var parsed = JSON.parse(raw);
+        state.next = parsed.next >= 1 ? Math.floor(parsed.next) : 1;
+        state.src = typeof parsed.src === "string" ? parsed.src : "";
+        state.video = parsed.video === true;
+      } else {
+        var value = parseInt(raw, 10);
+        state.next = isNaN(value) || value < 1 ? 1 : value;
+      }
     } catch (e) {
-      return 1;
+      // Unreadable state: start from the first ad.
     }
+    return state;
   }
 
-  function writeNext(value) {
+  function writeState(state) {
     if (!storage) {
       return;
     }
     try {
-      storage.setItem(storageKey, String(value));
+      storage.setItem(storageKey, JSON.stringify(state));
     } catch (e) {
       // Storage full or blocked: the ad still plays, the rotation just won't advance.
     }
@@ -235,19 +367,68 @@
       window.localStorage.removeItem(key);
       return window.localStorage;
     } catch (e) {
+      storageError = (e && (e.name || e.message)) || "blocked";
       return null;
     }
   }
 
+  // Diagnostics for the debug box, stored under fixed keys (not tied to the page path) so
+  // they show whether this screen reloads the page each loop and keeps the same path.
+  function recordLoad() {
+    var info = { loads: 1, samePath: "first load" };
+    if (!storage) {
+      return info;
+    }
+    try {
+      var loads = parseInt(storage.getItem("adRotator:diag:loads"), 10) || 0;
+      var lastPath = storage.getItem("adRotator:diag:path");
+      info.loads = loads + 1;
+      if (lastPath !== null) {
+        info.samePath = lastPath === window.location.pathname ? "yes" : "NO, path changed";
+      }
+      storage.setItem("adRotator:diag:loads", String(info.loads));
+      storage.setItem("adRotator:diag:path", window.location.pathname);
+    } catch (e) {
+      // Diagnostics only.
+    }
+    return info;
+  }
+
+  function isFramed() {
+    try {
+      return window.top !== window ? "yes" : "no";
+    } catch (e) {
+      return "yes (cross-origin)";
+    }
+  }
+
+  function now() {
+    return window.performance && performance.now ? performance.now() : Date.now();
+  }
+
+  function debugOn() {
+    return params.debug === "1" || settings.debug === true;
+  }
+
   function showDebug() {
-    if (params.debug !== "1") {
+    if (!debugOn()) {
       return;
     }
+    var state = readState();
+    var openFor = Math.round((now() - pageOpenedAt) / 1000);
     debugBox.textContent = [
-      "Ad Rotator",
+      "Ad Rotator " + VERSION,
       "playing: " + (current ? current.src : "none"),
-      "storage: " + (storage ? "localStorage" : "unavailable, always ad 1"),
-      "next try: ad " + readNext(),
+      "started from: " + startedFrom,
+      "on screen after: " + (shownAfter === null ? "..." : shownAfter + " ms"),
+      "next: ad " + state.next + (state.src ? " (" + state.src + ", ready)" : " (looking...)"),
+      "storage: " + (storage ? "localStorage OK" : "UNAVAILABLE (" + storageError + "), always ad 1"),
+      "page loads on this screen: " + diag.loads,
+      "same path as last load: " + diag.samePath,
+      "page open for: " + openFor + " s, visibility changes: " + visibilityChanges,
+      "in a frame: " + isFramed() + ", player object: " + (window.easysignage ? "yes" : "no"),
+      "path: " + window.location.pathname,
+      "browser: " + navigator.userAgent,
     ].join("\n");
     debugBox.style.display = "block";
   }
