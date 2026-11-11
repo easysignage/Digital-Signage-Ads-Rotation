@@ -27,6 +27,8 @@ Copy your ads into the "ads" folder and rename them by play order:
 - Videos: mp4 (H.264), webm, mov, m4v. They play without sound.
 - Number them with no gaps: 01, 02, 03. If 03 is missing, 04 and later never play.
 - Only one file per number.
+- Give every ad the same duration: make all videos the same length
+  (for example all 15 seconds). Images show for the Ad Rotator's duration.
 - The leading 0 keeps them in play order in your folder. 1, 2, 3 works too.
 
 
@@ -48,7 +50,8 @@ STEP 3 - ADD IT TO YOUR PLAYLIST
 
 1. In your playlist, upload the zip like any other file.
 2. Wait for it to finish validating.
-3. Set its duration to the length of your ads (the longest one if they differ).
+3. Set its duration to match your ads: the length of your videos, or how
+   long each image should show. Example: 15-second videos -> 15 seconds.
 4. Publish.
 
 

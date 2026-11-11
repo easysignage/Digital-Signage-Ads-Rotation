@@ -93,7 +93,9 @@ Open the folder, **select everything inside it**, and compress the selection:
 1. Upload the zip to your playlist as an **HTML5 package** (in EasySignage, upload it like any other
    file).
 2. Wait for it to finish validating.
-3. Set the item's **duration** to the length of your ads (the longest one if they differ).
+3. Set the item's **duration** to match your ads: the length of your videos, or how long each image should
+   show. Every ad plays for exactly this long, so **all ads should have the same duration** (for example,
+   15-second videos → 15 seconds).
 4. Publish to your screens.
 
 That's it. Each time the playlist reaches the item, the next ad plays.
@@ -159,8 +161,10 @@ editor:
 
 - **Match the ad size to your screen**, for example 1920×1080 for a landscape Full HD screen, so
   nothing gets cropped or letterboxed.
-- **Keep ads the same length.** The item has one duration, so a short ad would sit on its last frame
-  (or loop) until the time is up.
+- **Give every ad the same duration, and set the item's duration to match.** The item has one duration
+  and every ad plays for exactly that long. A video longer than the duration is cut off; a shorter one
+  stops on its last frame (or loops, with `videoEnd: "loop"`) until the time is up. Images show for the
+  full duration.
 - **Keep video files small.** Encode as H.264 MP4. Every screen downloads the whole zip.
 - **To change ads,** edit your unzipped copy, zip it again and replace the old item in the playlist.
 

@@ -66,6 +66,7 @@
   .tree .bad { color: var(--bad); font-weight: 700; }
 
   table { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
+  table.compact th, table.compact td { padding: 1.5mm 3mm; }
   th, td { text-align: left; padding: 2.2mm 3mm; border-bottom: 1px solid var(--line); vertical-align: top; }
   th { font-size: 8.5pt; text-transform: uppercase; letter-spacing: .5px; color: var(--mute); font-weight: 600; background: #f7f8ff; }
 
@@ -159,7 +160,7 @@
 <span>HOW-TO-USE.txt</span>  <span class="dim">quick steps</span></div>
   </div>
 
-  <h2 style="margin-top:8mm"><span class="num">2</span>Add your ads</h2>
+  <h2 style="margin-top:5mm"><span class="num">2</span>Add your ads</h2>
   <p>Copy your ads into the <span class="file">ads</span> folder and <b>rename each one with its play number</b>. The number decides the order:</p>
   <div class="row" style="align-items:flex-start">
     <div class="tree"><span class="hl">ads/</span>
@@ -175,15 +176,22 @@
     </div>
   </div>
 
-  <h3 style="margin-top:6mm">Supported files</h3>
-  <table>
+  <h3 style="margin-top:4mm">Supported files</h3>
+  <table class="compact">
     <tr><th style="width:22%">Type</th><th style="width:30%">Formats</th><th>Tips</th></tr>
     <tr><td><b>Images</b></td><td>JPG, JPEG, PNG, WebP, GIF, SVG</td><td>Make them the same size as your screen, for example 1920 × 1080.</td></tr>
     <tr><td><b>Videos</b></td><td>MP4, MOV, M4V, WebM</td><td>Export as <b>H.264 MP4, 1080p, 30 fps</b>. Videos play <b>without sound</b>.</td></tr>
     <tr><td><b>Not supported</b></td><td>HEIC, TIFF, BMP, AVI, WMV, MKV</td><td>Convert to JPG, PNG or MP4 first.</td></tr>
   </table>
 
-  <div class="note"><b>Keep your ads the same length</b>, for example all 10 or all 15 seconds. The slot has one duration in your playlist.</div>
+  <div class="note" style="margin-bottom:2.5mm"><b>Give every ad the same duration.</b> The Ad Rotator is one item in your playlist, so every ad plays for its duration. Make all videos the same length and set the duration to match.</div>
+  <table class="compact">
+    <tr><th style="width:45%">Your ads</th><th>Set the Ad Rotator's duration to</th></tr>
+    <tr><td>Videos, all 15 seconds long</td><td><b>15 seconds</b></td></tr>
+    <tr><td>Images only</td><td>How long each image should show, for example <b>10 seconds</b></td></tr>
+    <tr><td>Images and 15-second videos</td><td><b>15 seconds</b>. The images show for 15 seconds too.</td></tr>
+  </table>
+  <p class="callout" style="margin-top:1.5mm">Shorter than a video: the video is cut off. Longer: it stops on its last frame.</p>
 
   <div class="foot"><span>Ad Rotator · Quick guide</span><span>2 / 4</span></div>
 </section>
@@ -258,7 +266,7 @@ ad-rotator/
   <ol>
     <li>In EasySignage, open your playlist and <b>upload the zip</b> like any other file.</li>
     <li>Wait until it finishes checking the package.</li>
-    <li>Set the item's <b>duration</b> to the length of your ads (the longest one if they differ).</li>
+    <li>Set the Ad Rotator's <b>duration</b> to match your ads: the length of your videos, or how long each image should show. All ads must have the same duration (see page 2).</li>
     <li><b>Publish</b> to your screens.</li>
   </ol>
   <p>That's it. Each time the playlist reaches the Ad Rotator, the next ad plays. Each screen remembers its place, even after a restart.</p>
